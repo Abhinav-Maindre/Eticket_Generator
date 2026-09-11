@@ -119,8 +119,9 @@ public class EticketStepDefinition {
             // 2. Decode the Base64-encoded string into its raw byte form.
             byte[] decodedBytes = decoder.decode(this.base64TicketString);
 
-            // 3. Save the decoded bytes as a PDF file in the target directory.
-            java.io.File pdfFile = new java.io.File("target/generated-ticket.pdf");
+            // 3. Save the decoded bytes as a unique timestamped PDF file in the target directory.
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            java.io.File pdfFile = new java.io.File("target/generated-ticket_" + timestamp + ".pdf");
             try (java.io.FileOutputStream fos = new java.io.FileOutputStream(pdfFile)) {
                 fos.write(decodedBytes);
             }

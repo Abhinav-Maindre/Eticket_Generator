@@ -1,0 +1,80 @@
+{
+  "TocReference": "TEST",
+  "BookingReference": "BOOK1234",
+  "MethodOfPayment": "12356",
+  "RecipientEmailAddress": "test@gmail.com",
+  "TotalPrice": 10,
+  "TicketDetails": [
+    {
+      "HeaderDetails": {
+        "FormatId": "D10",
+        "IsRevenue": false,
+        "IsItinerary": false,
+        "IsOutward": true,
+        "StartDate": "2026-08-26",
+        "EndDate": "2030-09-01",
+        "IsChild": false,
+        "NumAdults": 1,
+        "NumChildren": 0,
+        "CustomerName": "b",
+        "RestrictionCode": "BX",
+        "Price": 10,
+        "IssueDateTime": "2026-08-26T09:09:09",
+        "Utn": "1234567890123",
+        "Barcode": "blah",
+        "IsExcess": false,
+        "Origin": {
+          "Nlc": "4321",
+          "Crs": "abc",
+          "Description": "halb"
+        },
+        "Destination": {
+          "Nlc": "1234",
+          "Crs": "cba",
+          "Description": "blah"
+        },
+        "TicketType": {
+          "Code": "12a",
+          "Description": "blah"
+        },
+        "DiscountType": {
+          "Code": "123",
+          "Description": "blah"
+        },
+        "Route": {
+          "Code": "00000",
+          "Description": "bla"
+        }
+      },
+      "Itinerary": {
+        "IsMandatory": false,
+        "Legs": [
+          {
+            "origin": "1111",
+            "depart": "2020-09-02T09:09:09",
+            "destination": "2222",
+            "arrival": "2020-09-02T09:09:09",
+            "tocName": "Toc",
+            "places": [
+              {
+                "coach": "A",
+                "placeType": "SEAT",
+                "placeId": "32"
+              }
+            ]
+          }
+        ]
+      },
+      "RetailerDetails": {
+        "Name": "b",
+        "Phone": "+1234567890",
+        "Url": "blah"
+      },
+      "ConfigDetails": {
+        "NreBaseUrl": "blah",
+        "ConditionsOfTravelUrl": "blah",
+        "CompensationUrl": "blah"
+      }
+    }
+  ]
+}
