@@ -26,6 +26,17 @@ public class EticketStepDefinition {
     private String authToken;
     private Response apiResponse;
     private String base64TicketString;
+    private static java.util.Properties errorProps;
+
+    static {
+        errorProps = new java.util.Properties();
+        try {
+            java.io.FileInputStream fis = new java.io.FileInputStream("src/test/resources/errormessages.properties");
+            errorProps.load(fis);
+        } catch (java.io.IOException e) {
+            System.err.println("WARNING: Could not load errormessages.properties!");
+        }
+    }
 
     @Given("The user is authenticated with Client Credentials")
     public void userIsAuthenticated() {
@@ -135,5 +146,80 @@ public class EticketStepDefinition {
         } catch (Exception e) {
             Assert.fail("Failed to decode or write PDF payload! Error: " + e.getMessage());
         }
+    }
+
+    @Given("The user is not authenticated")
+    public void userIsNotAuthenticated() {
+        System.out.println("\n=== STEP 1: BYPASSING AUTHENTICATION ===");
+        
+        // Use an invalid authorization header value to simulate unauthenticated access.
+        this.authToken = "Bearer invalid_token_123456789_xyz";
+        
+        System.out.println("[STEP 1 SUCCESS] Mocked an invalid token for security validation testing.");
+    }
+
+    @Then("The response should contain error details under key {string}")
+    public void responseShouldContainErrorDetails(String jsonKey) {
+        System.out.println("\n=== VERIFYING ERROR DETAILS ===");
+        
+        // Print the full response body for visibility.
+        String responseBody = this.apiResponse.asPrettyString();
+        System.out.println("[INFO] Response Body:\n" + responseBody);
+        
+        // Extract the error value under the specified key (e.g. $.errors).
+        Object errors = null;
+        try {
+            errors = JsonPath.read(responseBody, "$." + jsonKey);
+        } catch (Exception e) {
+            Assert.fail("Failed to find error key '" + jsonKey + "' in the response body! Error: " + e.getMessage());
+        }
+        
+        // Assert that errors exist and are not empty.
+        Assert.assertNotNull(errors, "Expected error details but found null under key: " + jsonKey);
+        if (errors instanceof java.util.List) {
+            Assert.assertFalse(((java.util.List<?>) errors).isEmpty(), "Expected validation error details but the error list is empty!");
+        }
+        System.out.println("[SUCCESS] Successfully verified error details under key: " + jsonKey);
+    }
+
+    @Then("The response should contain error details under key {string} for error code {string}")
+    public void responseShouldContainErrorDetailsForCode(String jsonKey, String errorCode) {
+        System.out.println("\n=== VERIFYING CENTRALIZED ERROR MAPPING ===");
+        
+        // Print response body for visibility
+        String responseBody = this.apiResponse.asPrettyString();
+        System.out.println("[INFO] Response Body:\n" + responseBody);
+        
+        // Get expected message from our centralized properties mapping
+        String expectedMessage = errorProps.getProperty(errorCode);
+        Assert.assertNotNull(expectedMessage, "No custom error message mapped for error code: " + errorCode + " in errormessages.properties!");
+        System.out.println("[INFO] Mapped Expected Message: '" + expectedMessage + "'");
+        
+        // Extract error details list using JsonPath
+        java.util.List<java.util.Map<String, Object>> errors = null;
+        try {
+            errors = JsonPath.read(responseBody, "$." + jsonKey);
+        } catch (Exception e) {
+            Assert.fail("Failed to find error key '" + jsonKey + "' in the response body! Error: " + e.getMessage());
+        }
+        
+        Assert.assertNotNull(errors, "Expected error details but found null under key: " + jsonKey);
+        Assert.assertFalse(errors.isEmpty(), "Expected error list to contain elements!");
+        
+        // Find if any returned error matches both the code and the expected mapped message
+        boolean found = false;
+        for (java.util.Map<String, Object> error : errors) {
+            String actualCode = String.valueOf(error.get("code"));
+            String actualMessage = (String) error.get("message");
+            
+            if (errorCode.equals(actualCode)) {
+                Assert.assertEquals(actualMessage, expectedMessage, "Error message mismatch for code: " + errorCode);
+                found = true;
+                break;
+            }
+        }
+        
+        Assert.assertTrue(found, "Expected error code '" + errorCode + "' was not found in the response error list!");
+        System.out.println("[SUCCESS] Successfully verified mapped error code " + errorCode + " matches expected message.");
     }
 }

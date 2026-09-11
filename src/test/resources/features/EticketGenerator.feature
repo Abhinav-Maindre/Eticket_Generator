@@ -22,3 +22,20 @@ Feature: E-Ticket Generator API Testing
       | D10    |
       | D11    |
       | D12    |
+
+  Scenario: Verify unauthorized request returns 401 status code
+    Given The user is not authenticated
+    When The user sends a POST request to generate an e-ticket with the payload "src/test/resources/testdata/EticketRequest_D01.json"
+    Then The response status code should be 401
+
+  Scenario: Verify missing BookingReference in D10 returns 400 Bad Request
+    Given The user is authenticated with Client Credentials
+    When The user sends a POST request to generate an e-ticket with the payload "src/test/resources/testdata/EticketRequest_D10_MissingBookingRef.json"
+    Then The response status code should be 400
+    And The response should contain error details under key "errors" for error code "10431"
+
+  Scenario: Verify invalid FormatId D99 returns 400 Bad Request
+    Given The user is authenticated with Client Credentials
+    When The user sends a POST request to generate an e-ticket with the payload "src/test/resources/testdata/EticketRequest_InvalidFormat.json"
+    Then The response status code should be 400
+    And The response should contain error details under key "errors" for error code "10422"
