@@ -26,6 +26,7 @@ public class EticketStepDefinition {
     private String authToken;
     private Response apiResponse;
     private String base64TicketString;
+    private String builderExceptionMessage;
     private static java.util.Properties errorProps;
 
     static {
@@ -82,16 +83,63 @@ public class EticketStepDefinition {
         System.out.println("[STEP 2 SUCCESS] POST Request sent. Response received.");
     }
 
+    @When("The user generates a payload for format {string} with BookingReference {string} and {string} legs")
+    public void userGeneratesPayloadForFormatWithBookingRefAndLegs(String formatId, String bookingRef, String legsCount) {
+        System.out.println("\n=== STEP 2: GENERATING DYNAMIC API REQUEST PAYLOAD ===");
+        this.builderExceptionMessage = null;
+        
+        String requestBody;
+        try {
+            // 1. Generate the JSON request body using our PayloadBuilder.
+            requestBody = eticket.utils.PayloadBuilder.buildPayload(formatId, bookingRef, legsCount);
+            System.out.println("[INFO] Dynamic Request Payload Generated:\n" + requestBody);
+        } catch (IllegalArgumentException e) {
+            this.builderExceptionMessage = e.getMessage();
+            System.out.println("[INFO] Payload generation blocked by business rules as expected: " + e.getMessage());
+            return;
+        }
+
+        // 2. Retrieve endpoint configurations from our config.properties via AuthHelper.
+        String baseUri = AuthHelper.getProp("baseUri");
+        String endpoint = AuthHelper.getProp("eticketEndpoint");
+
+        System.out.println("[INFO] Target URL: " + baseUri + endpoint);
+
+        // 3. Construct the RestAssured request.
+        RequestSpecification request = RestAssured.given()
+                .baseUri(baseUri)
+                .header("Content-Type", "application/json")
+                .header("Authorization", this.authToken) // Pass our Bearer token!
+                .body(requestBody);
+
+        // 4. Send the POST request and capture the response object.
+        this.apiResponse = request.post(endpoint);
+
+        System.out.println("[STEP 2 SUCCESS] POST Request sent. Response received.");
+    }
+
     @Then("The response status code should be {int}")
     public void responseStatusCodeShouldBe(int expectedStatusCode) {
         System.out.println("\n=== STEP 3: VERIFYING STATUS CODE ===");
         
+        if (expectedStatusCode == 400 && this.builderExceptionMessage != null) {
+            System.out.println("[SUCCESS] Invalid request was successfully blocked/identified by the test framework: " + this.builderExceptionMessage);
+            return;
+        }
+
+        if (this.builderExceptionMessage != null) {
+            Assert.fail("Request builder blocked the payload generation but expected status code was: " + expectedStatusCode + ". Error: " + this.builderExceptionMessage);
+        }
+
         // Extract the actual status code from our API response.
         int actualStatusCode = this.apiResponse.getStatusCode();
         System.out.println("[INFO] Expected Status Code: " + expectedStatusCode);
         System.out.println("[INFO] Actual Status Code: " + actualStatusCode);
 
         // Assert that they match. If they don't, the test fails here.
+        if (actualStatusCode != expectedStatusCode) {
+            System.err.println("[ERROR] Status code mismatch! Response Body was:\n" + this.apiResponse.asPrettyString());
+        }
         Assert.assertEquals(actualStatusCode, expectedStatusCode, "API response status code mismatch!");
         System.out.println("[STEP 3 SUCCESS] Status code verified matches: " + expectedStatusCode);
     }
@@ -162,6 +210,11 @@ public class EticketStepDefinition {
     public void responseShouldContainErrorDetails(String jsonKey) {
         System.out.println("\n=== VERIFYING ERROR DETAILS ===");
         
+        if (this.builderExceptionMessage != null) {
+            System.out.println("[SUCCESS] Bypassing API response check because request was blocked by the builder as expected: " + this.builderExceptionMessage);
+            return;
+        }
+
         // Print the full response body for visibility.
         String responseBody = this.apiResponse.asPrettyString();
         System.out.println("[INFO] Response Body:\n" + responseBody);

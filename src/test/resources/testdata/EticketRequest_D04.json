@@ -46,23 +46,7 @@
         }
       },
       "Itinerary": {
-        "IsMandatory": false,
-        "Legs": [
-          {
-            "origin": "1111",
-            "depart": "2020-09-02T09:09:09",
-            "destination": "2222",
-            "arrival": "2020-09-02T09:09:09",
-            "tocName": "Toc",
-            "places": [
-              {
-                "coach": "A",
-                "placeType": "SEAT",
-                "placeId": "32"
-              }
-            ]
-          }
-        ]
+        "IsMandatory": false
       },
       "RetailerDetails": {
         "Name": "b",

@@ -39,3 +39,50 @@ Feature: E-Ticket Generator API Testing
     When The user sends a POST request to generate an e-ticket with the payload "src/test/resources/testdata/EticketRequest_InvalidFormat.json"
     Then The response status code should be 400
     And The response should contain error details under key "errors" for error code "10422"
+
+  Scenario: Verify missing BookingReference in D11 returns 400 Bad Request
+    Given The user is authenticated with Client Credentials
+    When The user sends a POST request to generate an e-ticket with the payload "src/test/resources/testdata/EticketRequest_D11_MissingBookingRef.json"
+    Then The response status code should be 400
+    And The response should contain error details under key "errors" for error code "10431"
+
+  # --- FORMAT-SPECIFIC DYNAMIC MATRIX COVERAGE ---
+
+  Scenario Outline: Validate format-specific rules for valid payloads
+    Given The user is authenticated with Client Credentials
+    When The user generates a payload for format "<FormatId>" with BookingReference "<BookingReference>" and "<Legs>" legs
+    Then The response status code should be 200
+    And The response should contain the e-ticket base64 payload under key "tickets[0]"
+    And The e-ticket payload is successfully decoded using Base64
+
+    Examples:
+      | FormatId | BookingReference | Legs    |
+      | D01      | Absent           | Absent  |
+      | D01      | Present          | Present |
+      | D02      | Absent           | Absent  |
+      | D02      | Present          | Present |
+      | D04      | Present          | Present |
+      | D04      | Absent           | Absent  |
+      | D10      | Present          | 1       |
+      | D11      | Present          | 2+      |
+      | D12      | Absent           | Absent  |
+      | D12      | Present          | Present |
+
+  Scenario Outline: Validate format-specific rules for invalid payloads
+    Given The user is authenticated with Client Credentials
+    When The user generates a payload for format "<FormatId>" with BookingReference "<BookingReference>" and "<Legs>" legs
+    Then The response status code should be 400
+    And The response should contain error details under key "errors"
+
+    Examples:
+      | FormatId | BookingReference | Legs    |
+      | D01      | Present          | Absent  |
+      | D10      | Absent           | 1       |
+      | D10      | Empty            | 1       |
+      | D10      | Present          | 0       |
+      | D10      | Present          | 2       |
+      | D11      | Absent           | 2+      |
+      | D11      | Empty            | 2+      |
+      | D11      | Present          | 0       |
+      | D11      | Present          | 1       |
+      | D12      | Present          | Absent  |

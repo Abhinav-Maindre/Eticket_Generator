@@ -6,7 +6,7 @@
   "TicketDetails": [
     {
       "HeaderDetails": {
-        "FormatId": "D02",
+        "FormatId": "D11",
         "IsRevenue": false,
         "IsItinerary": false,
         "IsOutward": true,
@@ -46,7 +46,37 @@
         }
       },
       "Itinerary": {
-        "IsMandatory": false
+        "IsMandatory": false,
+        "Legs": [
+          {
+            "origin": "1111",
+            "depart": "2020-09-02T09:09:09",
+            "destination": "2222",
+            "arrival": "2020-09-02T09:09:09",
+            "tocName": "Toc",
+            "places": [
+              {
+                "coach": "A",
+                "placeType": "SEAT",
+                "placeId": "32"
+              }
+            ]
+          },
+          {
+            "origin": "2222",
+            "depart": "2020-09-02T10:09:09",
+            "destination": "3333",
+            "arrival": "2020-09-02T11:09:09",
+            "tocName": "Toc",
+            "places": [
+              {
+                "coach": "A",
+                "placeType": "SEAT",
+                "placeId": "33"
+              }
+            ]
+          }
+        ]
       },
       "RetailerDetails": {
         "Name": "b",
