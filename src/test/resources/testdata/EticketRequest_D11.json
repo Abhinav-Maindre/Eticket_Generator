@@ -20,7 +20,7 @@
         "RestrictionCode": "BX",
         "Price": 10,
         "IssueDateTime": "2026-08-26T09:09:09",
-        "Utn": "1234567890123",
+        "Utn": "12345678901",
         "Barcode": "blah",
         "IsExcess": false,
         "Origin": {
@@ -82,7 +82,8 @@
       "RetailerDetails": {
         "Name": "b",
         "Phone": "+1234567890",
-        "Url": "blah"
+        "Url": "blah",
+        "Email": "test@gmail.com"
       },
       "ConfigDetails": {
         "NreBaseUrl": "blah",

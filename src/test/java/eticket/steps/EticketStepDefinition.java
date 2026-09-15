@@ -118,6 +118,58 @@ public class EticketStepDefinition {
         System.out.println("[STEP 2 SUCCESS] POST Request sent. Response received.");
     }
 
+    @When("The user generates a payload with root field {string} missing")
+    public void userGeneratesPayloadWithRootFieldMissing(String fieldPath) {
+        System.out.println("\n=== STEP 2: GENERATING DYNAMIC API REQUEST PAYLOAD WITH MISSING FIELD ===");
+        this.builderExceptionMessage = null;
+        
+        String requestBody = eticket.utils.PayloadBuilder.buildPayloadWithMissingField(fieldPath);
+        System.out.println("[INFO] Dynamic Request Payload Generated with missing field:\n" + requestBody);
+
+        // Retrieve endpoint configurations
+        String baseUri = AuthHelper.getProp("baseUri");
+        String endpoint = AuthHelper.getProp("eticketEndpoint");
+
+        System.out.println("[INFO] Target URL: " + baseUri + endpoint);
+
+        // Construct and send the RestAssured request
+        RequestSpecification request = RestAssured.given()
+                .baseUri(baseUri)
+                .header("Content-Type", "application/json")
+                .header("Authorization", this.authToken)
+                .body(requestBody);
+
+        this.apiResponse = request.post(endpoint);
+
+        System.out.println("[STEP 2 SUCCESS] POST Request sent. Response received.");
+    }
+
+    @When("The user generates a payload with field {string} set to {string}")
+    public void userGeneratesPayloadWithFieldSetTo(String fieldPath, String invalidValue) {
+        System.out.println("\n=== STEP 2: GENERATING DYNAMIC API REQUEST PAYLOAD WITH MODIFIED FIELD ===");
+        this.builderExceptionMessage = null;
+        
+        String requestBody = eticket.utils.PayloadBuilder.buildPayloadWithModifiedField(fieldPath, invalidValue);
+        System.out.println("[INFO] Dynamic Request Payload Generated with modified field:\n" + requestBody);
+
+        // Retrieve endpoint configurations
+        String baseUri = AuthHelper.getProp("baseUri");
+        String endpoint = AuthHelper.getProp("eticketEndpoint");
+
+        System.out.println("[INFO] Target URL: " + baseUri + endpoint);
+
+        // Construct and send the RestAssured request
+        RequestSpecification request = RestAssured.given()
+                .baseUri(baseUri)
+                .header("Content-Type", "application/json")
+                .header("Authorization", this.authToken)
+                .body(requestBody);
+
+        this.apiResponse = request.post(endpoint);
+
+        System.out.println("[STEP 2 SUCCESS] POST Request sent. Response received.");
+    }
+
     @Then("The response status code should be {int}")
     public void responseStatusCodeShouldBe(int expectedStatusCode) {
         System.out.println("\n=== STEP 3: VERIFYING STATUS CODE ===");
